@@ -1,4 +1,11 @@
-
+struct Item {
+    name  : string,
+    state : int16,
+    description: string,
+    startTime : time_t,
+    endTime   : time_t,
+    createTime : time_t,
+}
 
 
 
@@ -29,4 +36,6 @@ fn main(){
      * checkForUpdates() -> Look if another terminal/application updated the to do list file
      * 
      */
+
 }
+

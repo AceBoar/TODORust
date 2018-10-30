@@ -1,10 +1,12 @@
+use std::time::{SystemTime};
+
 struct Item {
-    name  : string,
-    state : int16,
-    description: string,
-    startTime : time_t,
-    endTime   : time_t,
-    createTime : time_t,
+    name  : String,
+    state : i16,
+    description: String,
+    startTime : SystemTime,
+    endTime : SystemTime,
+    createTime : SystemTime,
 }
 
 
@@ -16,7 +18,7 @@ struct Item {
 
 fn main(){
 
-    let filename = #argv1;
+    let filename = "./todo.list";
     //If filename exists, open it for reading and writing, else error
     //Else create file... notify
 

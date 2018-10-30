@@ -4,20 +4,20 @@ struct Item {
     name  : String,
     state : i16,
     description: String,
-    startTime : SystemTime,
-    endTime : SystemTime,
-    createTime : SystemTime,
+    start_time : SystemTime,
+    end_time : SystemTime,
+    create_time : SystemTime,
 }
 
-fn printList(Vec<Item> list){
+fn print_list(list:Vec<Item>){
   for x in 0..list.len() {
     print!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"});
   }
 }
 
-fn printItem(Item todo){
-  print!("{}\t[{}]\n{}i\n",todo.name,if list[x].state == 0 {"Incomplete"}
-         else if list[x].state == 1 {"Started"} else
+fn print_item(todo:Item){
+  print!("{}\t[{}]\n{}i\n",todo.name,if todo.state == 0 {"Incomplete"}
+         else if todo.state == 1 {"Started"} else
          {"Complete"},todo.description);
 }
 

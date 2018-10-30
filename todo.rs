@@ -7,12 +7,17 @@ struct Item {
     createTime : time_t,
 }
 
+fn printList(Vec<Item> list){
+  for x in 0..list.len() {
+    print!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"});
+  }
+}
 
-
-
-
-
-
+fn printItem(Item todo){
+  print!("{}\t[{}]\n{}i\n",todo.name,if list[x].state == 0 {"Incomplete"}
+         else if list[x].state == 1 {"Started"} else
+         {"Complete"},todo.description);
+}
 
 fn main(){
 
@@ -36,11 +41,5 @@ fn main(){
      * checkForUpdates() -> Look if another terminal/application updated the to do list file
      * 
      */
-    fn printList(Vec<T> list){
-      for x in 0..len {
-        
-      }
-  
-    }
 }
 

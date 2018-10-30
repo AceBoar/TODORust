@@ -29,4 +29,10 @@ fn main(){
      * checkForUpdates() -> Look if another terminal/application updated the to do list file
      * 
      */
+    fn printList(Vec<T> list){
+      for x in 0..len {
+        
+      }
+  
+    }
 }

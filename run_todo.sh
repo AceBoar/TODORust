@@ -4,7 +4,7 @@
 #
 #Creation Date: 30-10-2018
 #
-#Last Modified Date: Tue 30 Oct 2018 09:21:55 AM EDT
+#Last Modified Date: Tue 30 Oct 2018 09:24:42 AM EDT
 #
 #Author: Douglas Alpuche
 #
@@ -21,7 +21,7 @@ else
     echo "I'm starting up, better set the lock"
     touch $LOCK_FILE
     echo "I'm now started"
-    sleep 20
+    ./todo
     echo "I'm now ended"
     rm $LOCK_FILE
 fi 

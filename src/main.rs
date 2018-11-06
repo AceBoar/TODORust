@@ -24,8 +24,40 @@ fn print_item(todo:Item){
          {"Complete"},todo.description);
 }
 
+//SpawnNewThread
+
+//UI
+fn run_ui(){
+    //WHILE READ LINE REPL
+    /*
+       read
+       while(true){
+        if(line == "print") {
+        
+        }else if(line == "add"){
+        
+        }else if(line == "show"){
+        
+        }else if(line == "edit"){
+        
+        }else if(line == "help"){
+          print!("Possible Commands are:\n");
+          print!("print -> Print all current items in the To Do list.\n");
+          print!("add -> Add a new item to the To Do List.\n");
+          print!("show <#>-> Show the details of the specific item.\n");
+          print!("edit <#>-> Edit the the listed item.\n");
+          print!("help -> Print this help menu.\n");
+        
+        }else{
+          print!("{}: ERROR: Command not found. Try 'help'")
+        }
+       }
+    */
+}
+
 fn main(){
 
+    //Prep Server
     let filename = "./todo.list";
     //If filename exists, open it for reading and writing, else error
     //Else create file... notify

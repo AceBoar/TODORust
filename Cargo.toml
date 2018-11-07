@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Doug A <m190108@usna.edu>", "Will P <m194932@usna.edu>"]
 
 [dependencies]
+text_io = "0.1.7"

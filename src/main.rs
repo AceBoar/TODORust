@@ -1,5 +1,9 @@
+extern crate nix;
+
 use std::time::{SystemTime,Duration};
 use std::thread::sleep;
+use std::thread::sleep;
+use nix::sys::socket;
 //nix mkfifo...
 
 
@@ -28,18 +32,17 @@ fn print_item(todo:Item){
 
 //UI
 fn run_ui(){
-    //WHILE READ LINE REPL
-    /*
        read
        while(true){
         if(line == "print") {
-        
+            print_list(toDoList);
         }else if(line == "add"){
         
         }else if(line == "show"){
-        
+            let mut num:u32 =read!();
+            print_item(toDoList[num]); 
         }else if(line == "edit"){
-        
+                  
         }else if(line == "help"){
           print!("Possible Commands are:\n");
           print!("print -> Print all current items in the To Do list.\n");
@@ -52,8 +55,9 @@ fn run_ui(){
           print!("{}: ERROR: Command not found. Try 'help'")
         }
        }
-    */
 }
+
+use std::fs::File;
 
 fn main(){
 
@@ -61,7 +65,25 @@ fn main(){
     let filename = "./todo.list";
     //If filename exists, open it for reading and writing, else error
     //Else create file... notify
+    let mut file = File::open(filename)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    let mut toDoList= std::vector<Item>();
+    //Read File Contents
+    Ok(())
     //MKFifo for spawning new processes...
+    let mut client_sockets = vector<nix::sys::socket>();
+    let socket = nix::sys::socket(AF_LOCAL,SOCK_STREAM,0)
+    let address = nix:sys:sockaddr_un::new();
+    address.sun_family=AF_LOCAL;
+    nix::sys::bind(socket,address,/*SIZE*/);
+    nix::sys::listen(socket,5);
+    while(client_sockets.size > 0){
+     client_sockets.push_back(nix::sys::accept(socket,address,/*SIZE*/));
+     /*SPAWN NEW THREAD AND INTERACT*/
+
+
+    }
     //Spawn new thread for UI
     //Main (I/O)- waits for new connections or closes connections...
     //          - it also handles I/O
@@ -77,5 +99,26 @@ fn main(){
     // printList() -> Display the current to do list
     // toggleListDisplay() -> Permanently display the list above the prompt: toggleable^
     std::thread::sleep(std::time::Duration::from_millis(10000));
+    /*let socket = 
+        nix::sys::socket();
+
+    // Delete old socket if necessary
+    if socket.exists() {
+        fs::unlink(&socket).unwrap();
+    }
+
+    // Bind to socket
+    let stream = match UnixListener::bind(&socket) {
+        Err(_) => panic!("failed to bind socket"),
+        Ok(stream) => stream,
+    };
+
+    println!("Server started, waiting for clients");
+
+    // Iterate over clients, blocks if no client available
+    for mut client in stream.listen().incoming() {
+        println!("Client said: {}", client.read_to_string().unwrap());
+    }
+     */
 }
 

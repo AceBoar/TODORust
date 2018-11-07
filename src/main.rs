@@ -4,6 +4,7 @@ use std::time::{SystemTime,Duration};
 use std::thread::sleep;
 use std::io::{self,Read};
 use std::io::prelude::*;
+use std::io::stdout;
 //nix mkfifo...
 
 
@@ -33,20 +34,39 @@ fn print_item(todo:Item){
 //UI
 fn run_ui(){
   let mut input:String;
+  let mut num:u32;
   //WHILE READ LINE REPL
-    input = read!("{}");
-    print!("{}\n",input);
-    /*
   while(true){
-    if(line == "print") {
+    print!("> ");
+    stdout().flush();
+    input = read!("{}");
+    if(input == "print") {
+      print!("Printing\n");
+    
+      // print_list(list);
+    }else if(input == "add"){
+      print!("Name: ");
+      stdout().flush();
+      let mut name:String = read!("{}\n");
+      
+      print!("Description: ");
+      stdout().flush();
+      let mut description:String = read!("{}\n");
+      
+      print!("{}\n{}\n",name,description);
+    
+      // add to list
+    }else if(input == "show"){
+      num = read!();
+      print!("Showing {}\n",num);
 
-    }else if(line == "add"){
+      // print_item(list[num]);
+    }else if(input == "edit"){
+      num = read!();
+      print!("Editing {}\n",num);
 
-    }else if(line == "show"){
-
-    }else if(line == "edit"){
-
-    }else if(line == "help"){
+      // additional options here?
+    }else if(input == "help"){
       print!("Possible Commands are:\n");
       print!("print -> Print all current items in the To Do list.\n");
       print!("add -> Add a new item to the To Do List.\n");
@@ -54,17 +74,20 @@ fn run_ui(){
       print!("edit <#>-> Edit the the listed item.\n");
       print!("help -> Print this help menu.\n");
 
+    }else if(input == "exit"){
+      print!("Exiting\n");
+      break;
     }else{
-      print!("{}: ERROR: Command not found. Try 'help'")
+      print!("{}: ERROR: Command not found. Try 'help'\n",input)
     }
   }
-    */
 }
 
 fn main(){
 
     //Prep Server
     let filename = "./todo.list";
+    run_ui();
     //If filename exists, open it for reading and writing, else error
     //Else create file... notify
     //MKFifo for spawning new processes...
@@ -82,6 +105,7 @@ fn main(){
     // showHelp()  -> Display a list of commands
     // printList() -> Display the current to do list
     // toggleListDisplay() -> Permanently display the list above the prompt: toggleable^
-    std::thread::sleep(std::time::Duration::from_millis(10000));
+    
+    //std::thread::sleep(std::time::Duration::from_millis(10000));
 }
 

@@ -1,5 +1,9 @@
+#[macro_use]
+extern crate text_io;
 use std::time::{SystemTime,Duration};
 use std::thread::sleep;
+use std::io::{self,Read};
+use std::io::prelude::*;
 //nix mkfifo...
 
 
@@ -28,30 +32,32 @@ fn print_item(todo:Item){
 
 //UI
 fn run_ui(){
-    //WHILE READ LINE REPL
+  let mut input:String;
+  //WHILE READ LINE REPL
+    input = read!("{}");
+    print!("{}\n",input);
     /*
-       read
-       while(true){
-        if(line == "print") {
-        
-        }else if(line == "add"){
-        
-        }else if(line == "show"){
-        
-        }else if(line == "edit"){
-        
-        }else if(line == "help"){
-          print!("Possible Commands are:\n");
-          print!("print -> Print all current items in the To Do list.\n");
-          print!("add -> Add a new item to the To Do List.\n");
-          print!("show <#>-> Show the details of the specific item.\n");
-          print!("edit <#>-> Edit the the listed item.\n");
-          print!("help -> Print this help menu.\n");
-        
-        }else{
-          print!("{}: ERROR: Command not found. Try 'help'")
-        }
-       }
+  while(true){
+    if(line == "print") {
+
+    }else if(line == "add"){
+
+    }else if(line == "show"){
+
+    }else if(line == "edit"){
+
+    }else if(line == "help"){
+      print!("Possible Commands are:\n");
+      print!("print -> Print all current items in the To Do list.\n");
+      print!("add -> Add a new item to the To Do List.\n");
+      print!("show <#>-> Show the details of the specific item.\n");
+      print!("edit <#>-> Edit the the listed item.\n");
+      print!("help -> Print this help menu.\n");
+
+    }else{
+      print!("{}: ERROR: Command not found. Try 'help'")
+    }
+  }
     */
 }
 

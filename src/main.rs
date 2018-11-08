@@ -75,16 +75,17 @@ fn run_ui(mut list:Vec<Item>){
       list.push(item);
       // add to list
     }else if(input == "show"){
+      let mut num:u32;
       num = read!();
       print!("Showing {}\n",num);
-      let mut num:u32;
-      list[num].print();
+      //list[num].print();
     }else if(input == "edit"){
+      let mut num:u32;
       num = read!();
       print!("Editing {}\nWhat value would you like to edit? [name,description,status]",num);
       stdout().flush();
       let mut var:String; 
-      let done:bool = false;
+      let mut done:bool = false;
       //LOOK HERE
       while(!done){
           var = read!("{}\n");

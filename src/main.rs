@@ -29,7 +29,7 @@ impl Item {
         }
     }
     fn print(&self) {
-      print!("Task: {}\t State: [{}]\n\t{}i\n",self.name,if self.state == 0 {"Incomplete"}
+      print!("Task: {}\t State: [{}]\n\t{}\n",self.name,if self.state == 0 {"Incomplete"}
          else if self.state == 1 {"Started"} else
          {"Complete"},self.description);
     
@@ -59,7 +59,6 @@ fn run_ui(mut list:Vec<Item>){
     stdout().flush();
     input = read!("{}");
     if(input == "print") {
-      print!("Printing\n");
       print_list(&list);
     }else if(input == "add"){
       print!("Name: ");
@@ -70,28 +69,67 @@ fn run_ui(mut list:Vec<Item>){
       stdout().flush();
       let mut description:String = read!("{}\n");
       
-      print!("{}\n{}\n",name,description);
       let mut item:Item = Item::new(name,description,SystemTime::now());
       list.push(item);
       // add to list
     }else if(input == "show"){
-      num = read!();
+      let mut num:usize = read!();
       print!("Showing {}\n",num);
-      let mut num:u32;
-      list[num].print();
+
+      if(num>=list.len()){
+        println!("ERROR: Invalid item");
+      }else{
+        list[num].print();
+      }
     }else if(input == "edit"){
-      num = read!();
-      print!("Editing {}\nWhat value would you like to edit? [name,description,status]",num);
-      stdout().flush();
+      let mut num:usize = read!();
+      
       let mut var:String; 
-      let done:bool = false;
+      let mut done:bool = false;
+      println!("Editing {}",num);
+
       //LOOK HERE
       while(!done){
-          var = read!("{}\n");
-          if( var == "name"){
-            
-            done=true;
+        print!("What value would you like to edit? [(n)ame,(d)escription,(s)tatus,done]: ");
+        stdout().flush();
+        var = read!("{}\n");
+        if( var == "name"|| var == "n"){
+          print!("New name: ");
+          stdout().flush();
+          let mut name:String = read!("{}\n");    
+
+          list[num].name=name;
+          // re-bind name 
+        }else if(var == "description"||var=="d"){
+          print!("New description: ");
+          stdout().flush();
+          let mut desc:String = read!("{}\n");    
+
+          list[num].description=desc;
+          // re-bind desc 
+        }else if(var == "status"||var=="s"){
+          print!("Change status [(i)ncomplete,(s)tarted,(c)omplete]: ");
+          stdout().flush();
+          let mut status:String = read!("{}\n"); 
+
+          if(status=="incomplete"||status=="i"){
+            list[num].state = 0;        
+          }else if(status=="started"||status=="s"){
+            list[num].state = 1;
+            list[num].start_time = SystemTime::now();
+          }else if(status=="complete"||status=="c"){
+            list[num].state = 2;
+            list[num].end_time = SystemTime::now();
+          }else{
+            println!("Invalid status: \"{}\"",status);
           }
+
+          // re-bind status
+        }else if(var=="done"){
+          break;
+        }else{
+          println!("Invalid command: \"{}\"",var);
+        }
       }
         
       // additional options here?
@@ -126,8 +164,6 @@ fn main(){
     //Main (I/O)- waits for new connections or closes connections...
     //          - it also handles I/O
     //          - updateFile() -> Update the to do list, called by thread one each time
-    //          - checkForUpdates() -> Look if another terminal/application updated the to do list file
-    //          - spawnNewThread()
     //          - removeThread()
     //Worker Thread -> UI
     //

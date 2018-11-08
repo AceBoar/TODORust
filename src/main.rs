@@ -77,7 +77,8 @@ fn run_ui(mut list:Vec<Item>){
     stdout().flush();
     input = read!("{}");
     if(input == "print") {
-      print_list(&list);
+      let args="print";
+      // TODO call function with resp
     }else if input == "add" {
       print!("Name: ");
       stdout().flush();
@@ -86,24 +87,24 @@ fn run_ui(mut list:Vec<Item>){
       print!("Description: ");
       stdout().flush();
       let description:String = read!("{}\n");
-      
-      let item:Item = Item::new(name,description,SystemTime::now());
-      list.push(item);
+
+      let mut args=String::from("");
+      args.push_str(&format!("add,{},{}",name,description));
+      // TODO create the string (comma separated) then send it
       // add to list
     }else if input == "show" {
-      let num:usize = read!();
+      let num:String = read!();
       print!("Showing {}\n",num);
 
-      if num>=list.len() {
-        println!("ERROR: Invalid item");
-      }else{
-        list[num].print();
-      }
+      let mut args=String::from("");
+      args.push_str(&format!("show,{}",num));
+      // TODO create the string (comma separated) then send it
     }else if input == "edit" {
-      let num:usize = read!();
+      let num:String = read!();
       
       let mut var:String; 
       println!("Editing {}",num);
+      // TODO create the string (comma separated) then send it
 
       //LOOK HERE
       loop{
@@ -115,14 +116,16 @@ fn run_ui(mut list:Vec<Item>){
           stdout().flush();
           let name:String = read!("{}\n");    
 
-          list[num].name=name;
+          let mut args=String::from("");
+          args.push_str(&format!("edit,{},n,{}",num,name));
           // re-bind name 
         }else if var == "description"||var=="d" {
           print!("New description: ");
           stdout().flush();
           let desc:String = read!("{}\n");    
 
-          list[num].description=desc;
+          let mut args=String::from("");
+          args.push_str(&format!("edit,{},d,{}",num,desc));
           // re-bind desc 
         }else if var == "status"||var=="s" {
           print!("Change status [(i)ncomplete,(s)tarted,(c)omplete]: ");
@@ -130,13 +133,14 @@ fn run_ui(mut list:Vec<Item>){
           let status:String = read!("{}\n"); 
 
           if status=="incomplete"||status=="i" {
-            list[num].state = 0;        
+            let mut args=String::from("");
+            args.push_str(&format!("edit,{},s,i",num));
           }else if status=="started"||status=="s" {
-            list[num].state = 1;
-            list[num].start_time = SystemTime::now();
+            let mut args=String::from("");
+            args.push_str(&format!("edit,{},s,s",num));
           }else if status=="complete"||status=="c" {
-            list[num].state = 2;
-            list[num].end_time = SystemTime::now();
+            let mut args=String::from("");
+            args.push_str(&format!("edit,{},s,c",num));
           }else{
             println!("Invalid status: \"{}\"",status);
           }
@@ -150,6 +154,8 @@ fn run_ui(mut list:Vec<Item>){
       }
         
       // additional options here?
+    }else if input == "exit"{
+      break;
     }else if input == "help" {
       print!("Possible Commands are:\n");
       print!("help -> Print this help menu.\n");
@@ -160,7 +166,7 @@ fn run_ui(mut list:Vec<Item>){
 }
 
 fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
-    let input_args:Vec<String> = cmd_str.split(" ").map(|x| x.to_string()).collect();
+    let input_args:Vec<String> = cmd_str.split(",").map(|x| x.to_string()).collect();
     //DEBUGGING
     //print!("Run CMD: '{}'\n",cmd_str);
     //print!("inputArgs: '{:?}'\n",input_args);
@@ -169,40 +175,40 @@ fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
     if input_args[0] == "print"  {
         return get_list(&list);
     }else if input_args[0] == "add" {
-        print!("Name: ");
-        stdout().flush();
         let name:String =input_args[1].clone();
         let description:String =input_args[2].clone();
-        print!("{}\n{}\n",name,description);
+
         let item:Item = Item::new(name,description,SystemTime::now());
         list.push(item);
         // add to list
     }else if input_args[0] == "show" {
-        let num:u32=input_args[1].parse::<u32>().unwrap();
-        print!("Showing {}\n",num);
+        let num:usize=input_args[1].parse::<usize>().unwrap();
         //list[num].print();
     }else if input_args[0] == "edit" {
-        let num:u32= input_args[1].parse::<u32>().unwrap();
-        print!("Editing {}\nWhat value would you like to edit? [name,description,status]",num);
-        stdout().flush();
-        let mut var:String; 
-        let mut done:bool = false;
+        let num:usize= input_args[1].parse::<usize>().unwrap();
+
         //LOOK HERE
-        while !done {
-            var = read!("{}\n");
-            if var == "name" {
+        if input_args[2] == "n" {
+          list[num].name=input_args[3].clone();
+          // re-bind name 
+        }else if input_args[2] == "d" {
+          list[num].description=input_args[3].clone();
+          // re-bind desc 
+        }else if input_args[2] == "s" {
+          if input_args[3]=="i" {
+            list[num].state = 0;        
+          }else if input_args[3]=="s" {
+            list[num].state = 1;
+            list[num].start_time = SystemTime::now();
+          }else if input_args[3]=="c" {
+            list[num].state = 2;
+            list[num].end_time = SystemTime::now();
+          }
 
-                done=true;
-            }
+          // re-bind status
         }
-
-        // additional options here?
-    }else if input_args[0] == "help" {
-        print!("Possible Commands are:\n");
-        print!("help -> Print this help menu.\n");
-        print!("exit -> Exit the program.\n");
-        print!("print -> Print all current items in the To Do list.\n");
     }
+
     return "".to_string();
 
 }

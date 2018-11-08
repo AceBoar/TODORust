@@ -50,7 +50,7 @@ fn get_list(list:&Vec<Item>) -> String{
       resp.push_str(&format!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"}));
   }
   //DEBUGGING
-  print!("{}",resp);
+  //print!("{}",resp);
   //END DEBUGGING
   return resp;
 }
@@ -162,8 +162,8 @@ fn run_ui(mut list:Vec<Item>){
 fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
     let input_args:Vec<String> = cmd_str.split(" ").map(|x| x.to_string()).collect();
     //DEBUGGING
-    print!("Run CMD: '{}'\n",cmd_str);
-    print!("inputArgs: '{:?}'\n",input_args);
+    //print!("Run CMD: '{}'\n",cmd_str);
+    //print!("inputArgs: '{:?}'\n",input_args);
     //END DEBUGGING
     
     if input_args[0] == "print"  {
@@ -227,7 +227,7 @@ fn main() {
     send_to_thread.push(sender);
 
     //Client Thread
-    let sender = sendToServer.clone(); 
+    let sender = send_to_server.clone(); 
     thread::spawn(move || {
         let val = String::from("0 print");
         sender.send(val).unwrap();
@@ -239,7 +239,7 @@ fn main() {
 
     let (sender,receiver) = mpsc::channel();
     send_to_thread.push(sender);
-    let sender = sendToServer.clone(); 
+    let sender = send_to_server.clone(); 
     thread::spawn(move || {
         let val = String::from("1 print");
         sender.send(val).unwrap();
@@ -255,7 +255,7 @@ fn main() {
     let mut resp:String;
     loop{
     //Command Processing
-    cmd = recvFromServer.recv().unwrap();
+    cmd = recv_from_server.recv().unwrap();
     requester=cmd.remove(0).to_digit(10).unwrap();
     
     //String Space

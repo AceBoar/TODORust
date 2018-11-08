@@ -221,34 +221,47 @@ fn main() {
     //A one way pipe for sending data between threads...
     let (sendToServer,recvFromServer) = mpsc::channel();
     let mut send_to_thread= Vec::new();
-    let mut receivers= Vec::new();
-    
     
     //For each thread
-    let (sender,receiver) = mpsc::channel();
+    let (mut sender,mut receiver) = mpsc::channel();
     send_to_thread.push(sender);
-    receivers.push(receiver);
-    let (sender,receiver) = mpsc::channel();
-    send_to_thread.push(sender);
-    receivers.push(receiver);
 
     //Client Thread
+    let sender = sendToServer.clone(); 
     thread::spawn(move || {
         let val = String::from("0 print");
-        sendToServer.send(val).unwrap();
-        let mut resp = receivers[0].recv().unwrap();
-        print!("Client 0: \n{}\n\n\n",resp);
+        sender.send(val).unwrap();
+        let mut resp:String = receiver.recv().unwrap();
+        let mut file = File::create("client0").unwrap();
+        file.write_all(resp.as_bytes()).unwrap();
 
     });
 
-    while(true){
+    let (sender,receiver) = mpsc::channel();
+    send_to_thread.push(sender);
+    let sender = sendToServer.clone(); 
+    thread::spawn(move || {
+        let val = String::from("1 print");
+        sender.send(val).unwrap();
+        let mut resp:String = receiver.recv().unwrap();
+        let mut file = File::create("client1").unwrap();
+        file.write_all(resp.as_bytes()).unwrap();
+    });
+
+
+    //INIFINTE PROCESSING LOOP
+    let mut cmd:String;
+    let mut requester:u32;
+    let mut resp:String;
+    loop{
     //Command Processing
-    let mut cmd = recvFromServer.recv().unwrap();
-    let mut requester:u32=cmd.remove(0).to_digit(10).unwrap();
+    cmd = recvFromServer.recv().unwrap();
+    requester=cmd.remove(0).to_digit(10).unwrap();
+    
+    //String Space
     cmd.remove(0);
 
-    let mut file = File::create(filename).unwrap();
-    let mut resp = run_cmd(&mut list,cmd);
+    resp = run_cmd(&mut list,cmd);
     print!("Server about to send to: {}\n{}\n\n\n",requester,resp);
     send_to_thread[(requester as usize)].send(resp).unwrap();
     }

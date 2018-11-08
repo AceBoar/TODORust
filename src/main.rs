@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate text_io;
-
 extern crate nix;
 
 use std::env;
@@ -160,10 +159,10 @@ fn run_ui(mut list:Vec<Item>){
 }
 
 fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
-    let input_args:Vec<String> = cmd_str.split(" ").map(|x| x.to_string()).collect();
+    let input_args:Vec<String> = cmd_str.split(" ").map(|x| x.to_string().trim().to_string()).collect();
     //DEBUGGING
-    //print!("Run CMD: '{}'\n",cmd_str);
-    //print!("inputArgs: '{:?}'\n",input_args);
+    print!("Run CMD: '{}'\n",cmd_str);
+    print!("inputArgs: '{:?}'\n",input_args);
     //END DEBUGGING
     
     if input_args[0] == "print"  {
@@ -212,12 +211,16 @@ fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
 fn main() {
     
     //Initialize ToDo List
-    let filename = "./todo.list";
     let mut list:Vec<Item> = Vec::new();
+
+    //Create some default items -- Just for demo sake
     let mut item:Item = Item::new("Eat".to_string(),"eat a sandwich".to_string(),SystemTime::now());
     list.push(item);
     item = Item::new("Sleep".to_string(),"Take a nap.".to_string(),SystemTime::now());
     list.push(item);
+
+
+
     //A one way pipe for sending data between threads...
     let (send_to_server,recv_from_server) = mpsc::channel();
     let mut send_to_thread= Vec::new();
@@ -229,25 +232,35 @@ fn main() {
     //Client Thread
     let sender = send_to_server.clone(); 
     thread::spawn(move || {
-        let val = String::from("0 print");
-        sender.send(val).unwrap();
-        let mut resp:String = receiver.recv().unwrap();
-        let mut file = File::create("client0").unwrap();
-        file.write_all(resp.as_bytes()).unwrap();
+        let mut input_file = File::open("input0").unwrap();
+        loop{
+            let mut val:String=String::new();
+            input_file.read_to_string(&mut val).unwrap();
+            if( val.len() < 2){
+                continue;
+            }
+            print!("Input: {}",val);
+            sender.send(val).unwrap();
+            let mut resp:String = receiver.recv().unwrap();
+            let mut file = File::create("client0").unwrap();
+            file.write_all(resp.as_bytes()).unwrap();
+        }
 
     });
 
     let (sender,receiver) = mpsc::channel();
     send_to_thread.push(sender);
     let sender = send_to_server.clone(); 
-    thread::spawn(move || {
-        let val = String::from("1 print");
+    /*thread::spawn(move || {
+        let mut input_file = File::open("input1").unwrap();
+        let mut val:String=String::new();
+        input_file.read_to_string(&mut val).unwrap();
         sender.send(val).unwrap();
         let mut resp:String = receiver.recv().unwrap();
         let mut file = File::create("client1").unwrap();
         file.write_all(resp.as_bytes()).unwrap();
     });
-
+*/
 
     //INIFINTE PROCESSING LOOP
     let mut cmd:String;
@@ -260,7 +273,8 @@ fn main() {
     
     //String Space
     cmd.remove(0);
-
+    print!("Server received command from: {}\n{}\n\n\n",requester,cmd);
+    
     resp = run_cmd(&mut list,cmd);
     print!("Server about to send to: {}\n{}\n\n\n",requester,resp);
     send_to_thread[(requester as usize)].send(resp).unwrap();

@@ -1,11 +1,12 @@
-extern crate nix;
-
+#[macro_use]
+extern crate text_io;
 use std::time::{SystemTime,Duration};
 use std::thread::sleep;
-use std::thread::sleep;
-use nix::sys::socket;
+use std::io::{self,Read};
+use std::io::prelude::*;
+use std::io::stdout;
+use std::fs::File;
 //nix mkfifo...
-
 
 struct Item {
     name  : String,
@@ -16,7 +17,26 @@ struct Item {
     create_time : SystemTime,
 }
 
-fn print_list(list:Vec<Item>){
+impl Item {
+    fn new(nameArg: String, descriptionArg: String, createTime: SystemTime) -> Item {
+        Item{
+            name: nameArg,
+            state : 0,
+            description: descriptionArg,
+            start_time : SystemTime::now(),
+            end_time : SystemTime::now(),
+            create_time : createTime,
+        }
+    }
+    fn print(&self) {
+      print!("Task: {}\t State: [{}]\n\t{}i\n",self.name,if self.state == 0 {"Incomplete"}
+         else if self.state == 1 {"Started"} else
+         {"Complete"},self.description);
+    
+    }
+}
+
+fn print_list(list:&Vec<Item>){
   for x in 0..list.len() {
     print!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"});
   }
@@ -31,59 +51,77 @@ fn print_item(todo:Item){
 //SpawnNewThread
 
 //UI
-fn run_ui(){
-       read
-       while(true){
-        if(line == "print") {
-            print_list(toDoList);
-        }else if(line == "add"){
+fn run_ui(mut list:Vec<Item>){
+  let mut input:String;
+  //WHILE READ LINE REPL
+  while(true){
+    print!("> ");
+    stdout().flush();
+    input = read!("{}");
+    if(input == "print") {
+      print!("Printing\n");
+      print_list(&list);
+    }else if(input == "add"){
+      print!("Name: ");
+      stdout().flush();
+      let mut name:String = read!("{}\n");
+      
+      print!("Description: ");
+      stdout().flush();
+      let mut description:String = read!("{}\n");
+      
+      print!("{}\n{}\n",name,description);
+      let mut item:Item = Item::new(name,description,SystemTime::now());
+      list.push(item);
+      // add to list
+    }else if(input == "show"){
+      num = read!();
+      print!("Showing {}\n",num);
+      let mut num:u32;
+      list[num].print();
+    }else if(input == "edit"){
+      num = read!();
+      print!("Editing {}\nWhat value would you like to edit? [name,description,status]",num);
+      stdout().flush();
+      let mut var:String; 
+      let done:bool = false;
+      //LOOK HERE
+      while(!done){
+          var = read!("{}\n");
+          if( var == "name"){
+            
+            done=true;
+          }
+      }
         
-        }else if(line == "show"){
-            let mut num:u32 =read!();
-            print_item(toDoList[num]); 
-        }else if(line == "edit"){
-                  
-        }else if(line == "help"){
-          print!("Possible Commands are:\n");
-          print!("print -> Print all current items in the To Do list.\n");
-          print!("add -> Add a new item to the To Do List.\n");
-          print!("show <#>-> Show the details of the specific item.\n");
-          print!("edit <#>-> Edit the the listed item.\n");
-          print!("help -> Print this help menu.\n");
-        
-        }else{
-          print!("{}: ERROR: Command not found. Try 'help'")
-        }
-       }
+      // additional options here?
+    }else if(input == "help"){
+      print!("Possible Commands are:\n");
+      print!("help -> Print this help menu.\n");
+      print!("exit -> Exit the program.\n");
+      print!("print -> Print all current items in the To Do list.\n");
+      print!("add -> Add a new item to the To Do List.\n");
+      print!("show <#> -> Show the details of the specific item.\n");
+      print!("edit <#> -> Edit the the listed item.\n");
+
+    }else if(input == "exit"){
+      print!("Exiting\n");
+      break;
+    }else{
+      print!("{}: ERROR: Command not found. Try 'help'\n",input)
+    }
+  }
 }
 
-use std::fs::File;
-
 fn main(){
-
     //Prep Server
     let filename = "./todo.list";
-    //If filename exists, open it for reading and writing, else error
-    //Else create file... notify
-    let mut file = File::open(filename)?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    let mut toDoList= std::vector<Item>();
-    //Read File Contents
-    Ok(())
-    //MKFifo for spawning new processes...
-    let mut client_sockets = vector<nix::sys::socket>();
-    let socket = nix::sys::socket(AF_LOCAL,SOCK_STREAM,0)
-    let address = nix:sys:sockaddr_un::new();
-    address.sun_family=AF_LOCAL;
-    nix::sys::bind(socket,address,/*SIZE*/);
-    nix::sys::listen(socket,5);
-    while(client_sockets.size > 0){
-     client_sockets.push_back(nix::sys::accept(socket,address,/*SIZE*/));
-     /*SPAWN NEW THREAD AND INTERACT*/
-
-
-    }
+    let mut list:Vec<Item> = Vec::new();
+    let mut item:Item = Item::new("Eat".to_string(),"eat a sandwich".to_string(),SystemTime::now());
+    item.print();
+    run_ui(list);
+    //print_item(item);
+    //run_ui();
     //Spawn new thread for UI
     //Main (I/O)- waits for new connections or closes connections...
     //          - it also handles I/O
@@ -98,27 +136,5 @@ fn main(){
     // showHelp()  -> Display a list of commands
     // printList() -> Display the current to do list
     // toggleListDisplay() -> Permanently display the list above the prompt: toggleable^
-    std::thread::sleep(std::time::Duration::from_millis(10000));
-    /*let socket = 
-        nix::sys::socket();
-
-    // Delete old socket if necessary
-    if socket.exists() {
-        fs::unlink(&socket).unwrap();
-    }
-
-    // Bind to socket
-    let stream = match UnixListener::bind(&socket) {
-        Err(_) => panic!("failed to bind socket"),
-        Ok(stream) => stream,
-    };
-
-    println!("Server started, waiting for clients");
-
-    // Iterate over clients, blocks if no client available
-    for mut client in stream.listen().incoming() {
-        println!("Client said: {}", client.read_to_string().unwrap());
-    }
-     */
 }
 

@@ -114,9 +114,13 @@ fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
             list[num].state = 2;
             list[num].end_time = SystemTime::now();
             return "Edited Status Successfully\n".to_string()
+          }else{
+            return "Inproper status... try 'help'".to_string()
           }
 
           // re-bind status
+        }else{
+          return "Inproper field... try 'help'".to_string()
         }
     }else if input_args[0] == "help" {
         return "help -> prints out help table\nprint -> print list\nadd, NAME, DESC -> add item\nshow, # -> Show info about item\nedit, #, [(n)ame|(d)escription|(s)tatus,[(i)ncomplete|(s)tarted|(c)omplete]] -> Edits item\n".to_string();

@@ -1,13 +1,21 @@
 #[macro_use]
 extern crate text_io;
-use std::time::{SystemTime,Duration};
-use std::thread::sleep;
+
+extern crate nix;
+
+use std::env;
+use std::fmt;
+use std::fs::File;
 use std::io::{self,Read};
 use std::io::prelude::*;
 use std::io::stdout;
-use std::fs::File;
-//nix mkfifo...
+use std::sync::mpsc;
+use nix::sys::socket;
+use std::time::{SystemTime,Duration};
+use std::thread;
+use std::thread::sleep;
 
+//An Item in the To Do List
 struct Item {
     name  : String,
     state : i16,
@@ -36,19 +44,28 @@ impl Item {
     }
 }
 
+fn get_list(list:&Vec<Item>) -> String{
+  let mut resp=String::from("");
+  for x in 0..list.len() {
+      resp.push_str(&format!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"}));
+  }
+  //DEBUGGING
+  print!("{}",resp);
+  //END DEBUGGING
+  return resp;
+}
 fn print_list(list:&Vec<Item>){
   for x in 0..list.len() {
     print!("{}\t{}\t[{}]\n",x,list[x].name,if list[x].state == 0 {"Incomplete"} else if list[x].state == 1 {"Started"} else {"Complete"});
   }
 }
 
+//Print an Individual Item
 fn print_item(todo:Item){
   print!("{}\t[{}]\n{}i\n",todo.name,if todo.state == 0 {"Incomplete"}
          else if todo.state == 1 {"Started"} else
          {"Complete"},todo.description);
 }
-
-//SpawnNewThread
 
 //UI
 fn run_ui(mut list:Vec<Item>){
@@ -138,39 +155,102 @@ fn run_ui(mut list:Vec<Item>){
       print!("help -> Print this help menu.\n");
       print!("exit -> Exit the program.\n");
       print!("print -> Print all current items in the To Do list.\n");
-      print!("add -> Add a new item to the To Do List.\n");
-      print!("show <#> -> Show the details of the specific item.\n");
-      print!("edit <#> -> Edit the the listed item.\n");
-
-    }else if(input == "exit"){
-      print!("Exiting\n");
-      break;
-    }else{
-      print!("{}: ERROR: Command not found. Try 'help'\n",input)
     }
   }
 }
 
-fn main(){
-    //Prep Server
+fn run_cmd(list:&mut Vec<Item>, cmdStr: String) -> String {
+    let inputArgs:Vec<String> = cmdStr.split(" ").map(|x| x.to_string()).collect();
+    //DEBUGGING
+    print!("Run CMD: '{}'\n",cmdStr);
+    print!("inputArgs: '{:?}'\n",inputArgs);
+    //END DEBUGGING
+    
+    if(inputArgs[0] == "print") {
+        return get_list(&list);
+    }else if(inputArgs[0] == "add"){
+        print!("Name: ");
+        stdout().flush();
+        let name:String =inputArgs[1].clone();
+        let description:String =inputArgs[2].clone();
+        print!("{}\n{}\n",name,description);
+        let mut item:Item = Item::new(name,description,SystemTime::now());
+        list.push(item);
+        // add to list
+    }else if(inputArgs[0] == "show"){
+        let num:u32=inputArgs[1].parse::<u32>().unwrap();
+        print!("Showing {}\n",num);
+        //list[num].print();
+    }else if(inputArgs[0] == "edit"){
+        let num:u32= inputArgs[1].parse::<u32>().unwrap();
+        print!("Editing {}\nWhat value would you like to edit? [name,description,status]",num);
+        stdout().flush();
+        let mut var:String; 
+        let mut done:bool = false;
+        //LOOK HERE
+        while(!done){
+            var = read!("{}\n");
+            if( var == "name"){
+
+                done=true;
+            }
+        }
+
+        // additional options here?
+    }else if(inputArgs[0] == "help"){
+        print!("Possible Commands are:\n");
+        print!("help -> Print this help menu.\n");
+        print!("exit -> Exit the program.\n");
+        print!("print -> Print all current items in the To Do list.\n");
+    }
+    return "".to_string();
+
+}
+
+
+//The Main Function...
+fn main() {
+    
+    //Initialize ToDo List
     let filename = "./todo.list";
     let mut list:Vec<Item> = Vec::new();
     let mut item:Item = Item::new("Eat".to_string(),"eat a sandwich".to_string(),SystemTime::now());
-    item.print();
-    run_ui(list);
-    //print_item(item);
-    //run_ui();
-    //Spawn new thread for UI
-    //Main (I/O)- waits for new connections or closes connections...
-    //          - it also handles I/O
-    //          - updateFile() -> Update the to do list, called by thread one each time
-    //          - removeThread()
-    //Worker Thread -> UI
-    //
-    // checkArgs() -> Looks if a filename was given, if not prompt for one...
-    // mainMenu()  -> Display a basic prompt (Readline repl loop)
-    // showHelp()  -> Display a list of commands
-    // printList() -> Display the current to do list
-    // toggleListDisplay() -> Permanently display the list above the prompt: toggleable^
+    list.push(item);
+    item = Item::new("Sleep".to_string(),"Take a nap.".to_string(),SystemTime::now());
+    list.push(item);
+    //A one way pipe for sending data between threads...
+    let (sendToServer,recvFromServer) = mpsc::channel();
+    let mut send_to_thread= Vec::new();
+    let mut receivers= Vec::new();
+    
+    
+    //For each thread
+    let (sender,receiver) = mpsc::channel();
+    send_to_thread.push(sender);
+    receivers.push(receiver);
+    let (sender,receiver) = mpsc::channel();
+    send_to_thread.push(sender);
+    receivers.push(receiver);
+
+    //Client Thread
+    thread::spawn(move || {
+        let val = String::from("0 print");
+        sendToServer.send(val).unwrap();
+        let mut resp = receivers[0].recv().unwrap();
+        print!("Client 0: \n{}\n\n\n",resp);
+
+    });
+
+    while(true){
+    //Command Processing
+    let mut cmd = recvFromServer.recv().unwrap();
+    let mut requester:u32=cmd.remove(0).to_digit(10).unwrap();
+    cmd.remove(0);
+
+    let mut file = File::create(filename).unwrap();
+    let mut resp = run_cmd(&mut list,cmd);
+    print!("Server about to send to: {}\n{}\n\n\n",requester,resp);
+    send_to_thread[(requester as usize)].send(resp).unwrap();
+    }
 }
 

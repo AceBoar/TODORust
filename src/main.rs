@@ -94,27 +94,32 @@ fn run_cmd(list:&mut Vec<Item>, cmd_str: String) -> String {
         let num:usize= input_args[1].parse::<usize>().unwrap();
 
         //LOOK HERE
-        if input_args[2] == "n" {
+        if input_args[2] == "name"||input_args[2] == "n" {
           list[num].name=input_args[3].clone();
+          return "Edited Name Successfully\n".to_string()
           // re-bind name 
-        }else if input_args[2] == "d" {
+        }else if input_args[2] == "description"||input_args[2] == "d" {
           list[num].description=input_args[3].clone();
+          return "Edited Description Successfully\n".to_string()
           // re-bind desc 
-        }else if input_args[2] == "s" {
-          if input_args[3]=="i" {
+        }else if input_args[2] == "status"||input_args[2] == "s" {
+          if input_args[3]=="incomplete"||input_args[3]=="i" {
             list[num].state = 0;        
-          }else if input_args[3]=="s" {
+            return "Edited Status Successfully\n".to_string()
+          }else if input_args[3]=="started"||input_args[3]=="s" {
             list[num].state = 1;
             list[num].start_time = SystemTime::now();
-          }else if input_args[3]=="c" {
+            return "Edited Status Successfully\n".to_string()
+          }else if input_args[3]=="complete"||input_args[3]=="c" {
             list[num].state = 2;
             list[num].end_time = SystemTime::now();
+            return "Edited Status Successfully\n".to_string()
           }
 
           // re-bind status
         }
-    }else {
-        return "print -> print list\nadd, NAME, DESC -> add item\nshow, # -> Show info about item\n".to_string();
+    }else if input_args[0] == "help" {
+        return "help -> prints out help table\nprint -> print list\nadd, NAME, DESC -> add item\nshow, # -> Show info about item\nedit, #, [(n)ame|(d)escription|(s)tatus,[(i)ncomplete|(s)tarted|(c)omplete]] -> Edits item\n".to_string();
     }
 
     return "Command Failed... try 'help'".to_string();
